@@ -1,0 +1,50 @@
+@startuml
+
+actor User
+participant "API" as API
+participant "Database" as DB
+
+User -> API: POST /transfer
+activate API
+
+API -> API: Extrai informações do corpo da requisição
+
+API -> DB: Inicia transação
+activate DB
+
+API -> DB: Verifica estoque da loja de origem
+DB --> API: Retorna dados do estoque
+
+API -> API: Valida existência e quantidade suficiente
+alt Produto não encontrado
+    API -> User: HTTP 404 Produto não encontrado
+    deactivate API
+    return
+else Quantidade insuficiente
+    API -> User: HTTP 400 Quantidade insuficiente
+    deactivate API
+    return
+end
+
+API -> DB: Deduz quantidade do estoque da loja de origem
+DB --> API: Atualização concluída
+
+API -> DB: Verifica estoque da loja de destino
+DB --> API: Retorna dados do estoque (ou null)
+
+alt Produto já existe na loja de destino
+    API -> DB: Atualiza quantidade do estoque da loja de destino
+    DB --> API: Atualização concluída
+else Produto não existe na loja de destino
+    API -> DB: Insere novo registro no estoque da loja de destino
+    DB --> API: Inserção concluída
+end
+
+API -> DB: Confirma transação
+DB --> API: Transação concluída
+
+API -> User: HTTP 200 Transferência realizada com sucesso
+
+deactivate API
+
+@enduml
