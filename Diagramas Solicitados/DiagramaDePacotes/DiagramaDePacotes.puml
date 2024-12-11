@@ -1,0 +1,82 @@
+@startuml
+allow_mixing
+package "Backend" {
+    package "src" {
+        package "controllers" {
+            class SalesController
+            class SalesReportController
+            class SalesStockController
+            class StockController
+            class StoreController
+            class UserController
+        }
+
+        package "database" {
+            class Migrations
+            class Seeds
+            class Connection {
+                +connect(): void
+            }
+        }
+
+        class Routes {
+            +defineRoutes(): void
+        }
+    }
+
+    class Knexfile {
+        +configureDatabase(): void
+    }
+}
+
+package "Frontend" {
+    package "planeta-jeans" {
+        package "service" {
+            class EstoqueService
+            class FaturamentoService
+            class LojaService
+            class UsuarioService
+            class VendasService
+        }
+
+        package "src" {
+            package "app" {
+                package "cadastrarloja"
+                package "cadastrarproduto"
+                package "cadastrarvenda"
+                package "faturamento"
+                package "home"
+                package "home-funcionario"
+                package "loja"
+                package "produtos"
+                package "unauthorized"
+                package "vendas"
+
+                class PageJsx
+                class GlobalsCss
+                class LayoutJs
+                class PageModuleCss
+            }
+
+            package "components"
+            package "hooks" {
+                class UseAuth {
+                    +login(): void
+                    +logout(): void
+                }
+            }
+        }
+    }
+}
+
+' Connections between Backend and Frontend
+"Backend" ..> "Frontend.planeta-jeans.service" : communicates
+"Frontend.planeta-jeans.service" ..> "Frontend.planeta-jeans.src.app" : provides
+"Frontend.planeta-jeans.src.app" ..> "Frontend.planeta-jeans.hooks" : uses
+
+' Internal Frontend relationships
+"Frontend.planeta-jeans.src.app" ..> "Frontend.planeta-jeans.src.components" : interacts
+
+' Connections Backend-Frontend Services
+"Backend.src.controllers" ..> "Frontend.planeta-jeans.service" : integrates
+@enduml
