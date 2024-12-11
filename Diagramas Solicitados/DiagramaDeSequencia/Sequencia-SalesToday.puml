@@ -1,0 +1,26 @@
+@startuml
+
+actor User
+participant "API" as API
+participant "Database" as DB
+
+User -> API: GET /sales-today
+activate API
+
+API -> API: Calcula data de hoje formatada
+
+API -> DB: Consulta vendas de hoje, agrupando por loja
+activate DB
+DB --> API: Retorna vendas totais por loja
+
+deactivate DB
+
+API -> User: HTTP 200 JSON com vendas totais
+
+deactivate API
+
+alt Erro no processo
+    API -> User: HTTP 500 Internal Server Error
+end
+
+@enduml
