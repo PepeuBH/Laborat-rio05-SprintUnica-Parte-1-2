@@ -1,0 +1,47 @@
+@startuml
+
+actor User
+participant "API" as API
+participant "Database" as DB
+
+User -> API: GET /store/user/{userId}
+activate API
+
+API -> DB: Consulta se o usuário é administrador
+activate DB
+DB --> API: Retorna isAdmin ou null
+
+deactivate DB
+
+alt Usuário não encontrado
+    API -> User: HTTP 404 Usuário não encontrado
+    deactivate API
+    return
+end
+
+alt Usuário é administrador
+    API -> DB: Consulta todas as lojas
+    activate DB
+    DB --> API: Retorna lista de todas as lojas
+    deactivate DB
+    API -> User: HTTP 200 JSON com todas as lojas
+    deactivate API
+    return
+else Usuário não é administrador
+    API -> DB: Consulta store_id associado ao usuário
+    activate DB
+    DB --> API: Retorna lista de store_id
+    deactivate DB
+
+    alt Nenhuma loja encontrada
+        API -> User: HTTP 404 Nenhuma loja encontrada
+        deactivate API
+        return
+    else Loja(s) encontrada(s)
+        API -> User: HTTP 200 JSON com store_id
+    end
+end
+
+deactivate API
+
+@enduml
